@@ -1,0 +1,95 @@
+package socketstcp;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.StringTokenizer;
+
+class TCPClient
+{
+	public static String muestraContenido(String archivo) throws FileNotFoundException, IOException {
+        String cadena,fin="";
+        FileReader f = new FileReader(archivo);
+        BufferedReader b = new BufferedReader(f);
+        while((cadena = b.readLine())!=null) {
+            fin=fin+cadena;
+        }
+        b.close();
+        return fin;
+    }
+	public static String Enviar(String cadena) throws Exception{
+		String cadena2;
+		Socket clientSocket = new Socket("172.31.14.44", 6790);
+		OutputStream os = clientSocket.getOutputStream();
+		DataOutputStream outToServer = new DataOutputStream( os );
+		
+			outToServer.writeBytes(cadena+ '\n');
+		
+		InputStreamReader isr2 = new InputStreamReader( clientSocket.getInputStream() );
+		BufferedReader inFromServer = new BufferedReader( isr2 );
+		
+			cadena2 = inFromServer.readLine();		
+		clientSocket.close();
+		return cadena2;
+	}
+	public static void main(String argv[]) throws Exception
+	{
+		String cadena;
+		int n1=48,n2=48,n3=48,suma=0,suma2=0;
+		String palabra="",palabra2="";
+		String respuesta="";
+		cadena=muestraContenido("/Users/Sam/Documents/SOPAS.txt");
+		System.out.println(cadena);
+		StringTokenizer st = new StringTokenizer(cadena);
+		//for(int j=0;j<3;j++) {
+		while(st.hasMoreTokens()) {	
+			String token=st.nextToken();
+			for (int i = 0; i < token.length(); i++){
+			    char letra = token.charAt(i);
+			    int ascii = (int) letra;
+			    suma=suma+ascii;
+			    palabra=palabra+ascii;
+			}
+			String m1=Integer.toString(n1);
+			String m2=Integer.toString(n2);
+			String m3=Integer.toString(n3);
+			String digitos = Integer.toString(suma);
+			for (int i = 0; i < digitos.length(); i++){
+			    char digito = digitos.charAt(i);
+			    int ascii2 = (int) digito;
+			    
+			    suma2=suma2+ascii2;
+			    palabra2=palabra2+ascii2;
+			    
+			}
+			String mensaje=m1+m2+m3+"02"+palabra+"03"+palabra2;
+			respuesta=Enviar(mensaje);
+			System.out.println(mensaje);
+			System.out.println(respuesta);
+			while(respuesta=="correcto ") {	
+			respuesta=Enviar(mensaje);
+			System.out.println(respuesta);
+			
+			}
+			n3++;
+			if(n3==58) {
+				n2++;
+				n3=48;
+			}
+			if(n2==58) {
+				n1++;
+				n2=48;
+			}
+			mensaje="";
+			suma=0;
+			palabra="";
+			palabra2="";
+		}
+	}
+}
+
+
